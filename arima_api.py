@@ -16,6 +16,16 @@ DB_CONFIG = {
     $db   = 'u611918462_keuangan';
 }
 
+# --- tes koneksi ke database ---
+import mysql.connector
+
+try:
+    conn = mysql.connector.connect(**DB_CONFIG)
+    print("✅ Koneksi berhasil ke database Hostinger")
+    conn.close()
+except Exception as e:
+    print("❌ Gagal konek:", e)
+    
 # ==========================================================
 # 🔹 Ambil data agregat dari DB (PONDOK)
 # ==========================================================
