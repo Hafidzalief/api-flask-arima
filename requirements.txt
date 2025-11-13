@@ -1,6 +1,9 @@
+numpy
+pandas
+scikit-learn
+statsmodels
+pmdarima
 flask
 flask-cors
-pandas
 mysql-connector-python
-pmdarima
 gunicorn
