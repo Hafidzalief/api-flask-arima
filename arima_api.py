@@ -10,10 +10,10 @@ CORS(app)
 
 # ⚙️ KONFIGURASI DATABASE
 DB_CONFIG = {
-    'host': 'localhost',
-    'user': 'root',
-    'password': '',
-    'database': 'keuangan'
+    $host = 'localhost';
+    $user = 'u611918462_keuangan_pmds';
+    $pass = 'Darussalamsukaraja_2021';
+    $db   = 'u611918462_keuangan';
 }
 
 # ==========================================================
