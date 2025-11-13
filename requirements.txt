@@ -1,0 +1,6 @@
+flask
+flask-cors
+pandas
+mysql-connector-python
+pmdarima
+gunicorn
