@@ -8,24 +8,23 @@ from datetime import datetime
 app = Flask(__name__)
 CORS(app)
 
-# ⚙️ KONFIGURASI DATABASE
+# ⚙️ KONFIGURASI DATABASE (FIXED)
 DB_CONFIG = {
-    $host = 'localhost';
-    $user = 'u611918462_keuangan_pmds';
-    $pass = 'Darussalamsukaraja_2021';
-    $db   = 'u611918462_keuangan';
+    "host": "srv1416.hstgr.io",  
+    "user": "u611918462_keuangan_pmds",
+    "password": "Darussalamsukaraja_2021",
+    "database": "u611918462_keuangan"
 }
 
-# --- tes koneksi ke database ---
-import mysql.connector
-
+# --- tes koneksi ke database (FIXED) ---
 try:
     conn = mysql.connector.connect(**DB_CONFIG)
     print("✅ Koneksi berhasil ke database Hostinger")
     conn.close()
 except Exception as e:
     print("❌ Gagal konek:", e)
-    
+
+
 # ==========================================================
 # 🔹 Ambil data agregat dari DB (PONDOK)
 # ==========================================================
@@ -93,6 +92,7 @@ def fetch_aggregates(filter_mode):
         df = df.rename(columns={'total_keluar': 'keluar'})
 
     return df[['periode', 'masuk', 'keluar']]
+
 
 # ==========================================================
 # 🔹 Ambil data agregat Unit Usaha
@@ -162,6 +162,7 @@ def fetch_aggregates_unit_usaha(filter_mode):
 
     return df[['periode', 'masuk', 'keluar']]
 
+
 # ==========================================================
 # 🔹 Ambil data agregat LAZISWAF
 # ==========================================================
@@ -230,6 +231,7 @@ def fetch_aggregates_laziswaf(filter_mode):
 
     return df[['periode', 'masuk', 'keluar']]
 
+
 # ==========================================================
 # 🔹 Fungsi Prediksi ARIMA
 # ==========================================================
@@ -251,6 +253,7 @@ def forecast_series(y_series, periods, seasonal=False, m=1):
         avg = float(y_series.mean() if len(y_series) > 0 else 0)
         return [avg] * periods
 
+
 # ==========================================================
 # 🔹 Buat label periode berikutnya
 # ==========================================================
@@ -265,13 +268,14 @@ def next_period_labels(last_label, count, mode):
             base = datetime.strptime(str(last_label), '%Y-%m')
             for i in range(1, count + 1):
                 labels.append((base + pd.DateOffset(months=i)).strftime('%Y-%m'))
-        else:  # tahun
+        else:
             year = int(str(last_label)[:4])
             for i in range(1, count + 1):
                 labels.append(str(year + i))
     except Exception as e:
         print("Error next_period_labels:", e, last_label, mode)
     return labels
+
 
 # ==========================================================
 # 🔹 Endpoint Grafik Pondok
@@ -280,12 +284,14 @@ def next_period_labels(last_label, count, mode):
 def api_grafik():
     return generate_response(fetch_aggregates)
 
+
 # ==========================================================
 # 🔹 Endpoint Grafik Unit Usaha
 # ==========================================================
 @app.route('/api/grafik_unit_usaha')
 def api_grafik_unit_usaha():
     return generate_response(fetch_aggregates_unit_usaha)
+
 
 # ==========================================================
 # 🔹 Endpoint Grafik LAZISWAF
@@ -294,8 +300,9 @@ def api_grafik_unit_usaha():
 def api_grafik_laziswaf():
     return generate_response(fetch_aggregates_laziswaf)
 
+
 # ==========================================================
-# 🔹 RESPON UTAMA (Ditambahkan Notifikasi Data Tidak Cukup)
+# 🔹 RESPON UTAMA (tidak diubah)
 # ==========================================================
 def generate_response(fetch_func):
     mode = request.args.get('filter', 'hari')
@@ -303,7 +310,6 @@ def generate_response(fetch_func):
 
     df = fetch_func(mode)
 
-    # 🔴 NOTIFIKASI 1: Data kosong
     if df.empty:
         return jsonify({
             'status': 'error',
@@ -312,11 +318,9 @@ def generate_response(fetch_func):
             'prediksi_label': [], 'prediksi_masuk': [], 'prediksi_keluar': []
         })
 
-    # Konversi angka
     df['masuk'] = pd.to_numeric(df['masuk'], errors='coerce').fillna(0)
     df['keluar'] = pd.to_numeric(df['keluar'], errors='coerce').fillna(0)
 
-    # 🔴 NOTIFIKASI 2: Data kurang dari 3 periode
     if len(df) < 3:
         return jsonify({
             'status': 'error',
@@ -329,14 +333,12 @@ def generate_response(fetch_func):
             'prediksi_keluar': []
         })
 
-    # Prediksi ARIMA
     seasonal = True if mode == 'bulan' else False
     m = 12 if mode == 'bulan' else 1
 
     fc_masuk = forecast_series(df['masuk'], predict_count, seasonal, m)
     fc_keluar = forecast_series(df['keluar'], predict_count, seasonal, m)
 
-    # Label prediksi
     last_label = df['periode'].iloc[-1]
     pred_labels = next_period_labels(last_label, predict_count, mode)
 
@@ -349,6 +351,7 @@ def generate_response(fetch_func):
         'prediksi_masuk': fc_masuk,
         'prediksi_keluar': fc_keluar
     })
+
 
 # ==========================================================
 # 🔹 Jalankan server Flask
